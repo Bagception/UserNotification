@@ -1,7 +1,6 @@
 package de.uniulm.bagception.notification.usernotificationservice;
 
 import android.app.Notification;
-import android.app.Notification.Builder;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -9,10 +8,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 import android.widget.Toast;
-import de.philipphock.android.lib.logging.LOG;
 import de.philipphock.android.lib.services.observation.ConstantFactory;
 import de.philipphock.android.lib.services.observation.ObservableService;
 import de.philipphock.android.lib.services.observation.ServiceObservationActor;
@@ -30,7 +26,6 @@ public class NotificationService extends ObservableService implements
 	private ServiceObservationActor soActor;
 	private MessengerHelper messengerHelper;
 	
-	private boolean isDead=true;
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
@@ -43,7 +38,6 @@ public class NotificationService extends ObservableService implements
 	
 	@Override
 	public void onFirstInit(){
-		isDead = false;
 		
 		messengerHelper = new MessengerHelper(this,
 				ServiceNames.BLUETOOTH_CLIENT_SERVICE);
@@ -67,7 +61,6 @@ public class NotificationService extends ObservableService implements
 		
 	@Override
 	public void onDestroy() {
-		isDead = true;
 		if (messengerHelper != null)
 			messengerHelper.unregister(this);
 		
