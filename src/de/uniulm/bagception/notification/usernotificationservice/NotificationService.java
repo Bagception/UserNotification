@@ -1,5 +1,8 @@
 package de.uniulm.bagception.notification.usernotificationservice;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -8,6 +11,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Parcelable;
 import android.widget.Toast;
 import de.philipphock.android.lib.services.observation.ConstantFactory;
 import de.philipphock.android.lib.services.observation.ObservableService;
@@ -96,8 +100,8 @@ public class NotificationService extends ObservableService implements
 		switch (r) {
 		case Ask_For_Specific_Device:
 			ack = ResponseAnswer.Ask_For_Specific_Device.getACK();
-			Toast.makeText(getApplicationContext(), "DEVICES...???",
-					Toast.LENGTH_SHORT).show();
+			ArrayList<BluetoothDevice> ds =  b.getParcelableArrayList(Response.EXTRA_KEYS.PAYLOAD);
+			showNotification(ds);
 			break;
 
 		case Confirm_Established_Connection:
@@ -121,8 +125,15 @@ public class NotificationService extends ObservableService implements
 	}
 
 	
+	private void showNotification(final List<BluetoothDevice> d) {
+		 showNotification("Bagception", "Es wurden mehrere Taschen gefunden");
+	}
 	
 	private void showNotification(final BluetoothDevice d) {
+		 showNotification("Bagception", "Es wurde die Tasche \"" + d.getName() + "\" gefunden");
+	}
+	
+	private void showNotification(String title,String msg){
 		if (isDead()){
 			return;
 		}
@@ -132,12 +143,11 @@ public class NotificationService extends ObservableService implements
 		
 		Notification mBuilder = new Notification.Builder(
 				this).setSmallIcon(R.drawable.shoppingbag)
-				.setContentTitle("Bagception")
+				.setContentTitle(title)
 				.setContentIntent(pIntent)
-				.setContentText("Es wurde die Tasche \"" + d.getName() + "\" gefunden").build();
+				.setContentText(msg).build();
 		
-		notificationManager.notify(0, mBuilder); 
-		
+		notificationManager.notify(0, mBuilder);
 	}
 
 		
