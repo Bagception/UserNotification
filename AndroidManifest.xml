@@ -26,11 +26,16 @@
             </intent-filter>
         </activity>
 
-        <service android:name="NotificationService" >
+        <service android:name="de.uniulm.bagception.notification.usernotificationservice.NotificationService" >
             <intent-filter>
                 <action android:name="de.uniulm.bagception.notification.usernotificationservice.NotificationService" />
             </intent-filter>
         </service>
+
+        <activity
+            android:name="de.uniulm.bagception.notification.usernotificationservice.NotificationReceiver"
+            android:label="@string/title_activity_notification_receiver" >
+        </activity>
     </application>
 
 </manifest>

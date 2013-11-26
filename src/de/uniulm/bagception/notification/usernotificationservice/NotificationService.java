@@ -11,7 +11,6 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.Parcelable;
 import android.widget.Toast;
 import de.philipphock.android.lib.services.observation.ConstantFactory;
 import de.philipphock.android.lib.services.observation.ObservableService;
@@ -31,18 +30,27 @@ public class NotificationService extends ObservableService implements
 	private MessengerHelper messengerHelper;
 	
 
+
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		Toast.makeText(getApplicationContext(), "start service",
-				Toast.LENGTH_SHORT).show();
+		
+		if (intent != null  && intent.getExtras() != null){
+			ResponseAnswer answer = ResponseAnswer.getResponseAnswer(intent.getExtras());
+			if (answer != ResponseAnswer.NOT_AN_RESPONSE_ANSWER){
+				//startService called from notificationReceiver
+				//pass through middleware
+				messengerHelper.sendResponseBundle(intent.getExtras());
+			}
+		}
+		
+		
 		return super.onStartCommand(intent, flags, Service.START_NOT_STICKY);
 	}
 	
 
 	
 	@Override
-	public void onFirstInit(){
-		
+	public void onFirstInit(){		
 		messengerHelper = new MessengerHelper(this,
 				ServiceNames.BLUETOOTH_CLIENT_SERVICE);
 		messengerHelper.register(this);
@@ -101,17 +109,13 @@ public class NotificationService extends ObservableService implements
 		case Ask_For_Specific_Device:
 			ack = ResponseAnswer.Ask_For_Specific_Device.getACK();
 			ArrayList<BluetoothDevice> ds =  b.getParcelableArrayList(Response.EXTRA_KEYS.PAYLOAD);
-			showNotification(ds);
+			showNotification(ds,b);
 			break;
 
 		case Confirm_Established_Connection:
 			ack = ResponseAnswer.Confirm_Established_Connection.getACK();
 			BluetoothDevice d = (BluetoothDevice) b.getParcelable(Response.EXTRA_KEYS.PAYLOAD);
-			Bundle answer = ResponseAnswer
-					.getResponseAnswerBundle(ResponseAnswer.Confirm_Established_Connection);
-			/*answer.putBoolean(ResponseAnswer.EXTRA_KEYS.PAYLOAD, true);
-			messengerHelper.sendResponseBundle(answer);*/
-			showNotification(d);
+			showNotification(d,b);
 
 			break;
 		default:
@@ -125,20 +129,22 @@ public class NotificationService extends ObservableService implements
 	}
 
 	
-	private void showNotification(final List<BluetoothDevice> d) {
-		 showNotification("Bagception", "Es wurden mehrere Taschen gefunden");
+	private void showNotification(final List<BluetoothDevice> d,Bundle response) {
+		 showNotification("Bagception", "Es wurden mehrere Taschen gefunden",response);
 	}
 	
-	private void showNotification(final BluetoothDevice d) {
-		 showNotification("Bagception", "Es wurde die Tasche \"" + d.getName() + "\" gefunden");
+	private void showNotification(final BluetoothDevice d,Bundle response) {
+		 showNotification("Bagception", "Es wurde die Tasche \"" + d.getName() + "\" gefunden",response);
 	}
 	
-	private void showNotification(String title,String msg){
+	private void showNotification(String title,String msg, Bundle response){
 		if (isDead()){
 			return;
 		}
-		Intent intent = new Intent(this, MainActivity.class);
-		PendingIntent pIntent = PendingIntent.getActivity(this, 0, intent, 0);
+		Intent intent = new Intent(this, NotificationReceiver.class);
+		intent.putExtras(response);
+		PendingIntent pIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+		
 		NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		
 		Notification mBuilder = new Notification.Builder(
