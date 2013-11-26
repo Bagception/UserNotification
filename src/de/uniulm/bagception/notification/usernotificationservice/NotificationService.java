@@ -86,15 +86,22 @@ public class NotificationService extends ObservableService implements
 
 	@Override
 	public void onResponseMessage(Bundle b) {
-		Response r = Response.getResponse(b);
 		
+
+		if (isDead()){
+			return;
+		}
+		Response r = Response.getResponse(b);
+		Bundle ack=null;
 		switch (r) {
 		case Ask_For_Specific_Device:
+			ack = ResponseAnswer.Ask_For_Specific_Device.getACK();
 			Toast.makeText(getApplicationContext(), "DEVICES...???",
 					Toast.LENGTH_SHORT).show();
 			break;
 
 		case Confirm_Established_Connection:
+			ack = ResponseAnswer.Confirm_Established_Connection.getACK();
 			BluetoothDevice d = (BluetoothDevice) b.getParcelable(Response.EXTRA_KEYS.PAYLOAD);
 			Bundle answer = ResponseAnswer
 					.getResponseAnswerBundle(ResponseAnswer.Confirm_Established_Connection);
@@ -106,9 +113,15 @@ public class NotificationService extends ObservableService implements
 		default:
 			break;
 		}
+		
+		//send ack = tells the service that we handled the message and it does not have to retransmit it ever again
+		if (ack != null)
+			messengerHelper.sendResponseBundle(ack);
 
 	}
 
+	
+	
 	private void showNotification(final BluetoothDevice d) {
 		if (isDead()){
 			return;
