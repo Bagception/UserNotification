@@ -6,7 +6,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import de.philipphock.android.lib.services.ServiceUtil;
+import de.uniulm.bagception.bluetoothclientmessengercommunication.service.BundleMessageHelper;
 import de.uniulm.bagception.bluetoothservermessengercommunication.activities.ServiceObserverActivity;
+import de.uniulm.bagception.protocol.bundle.constants.Command;
 
 public class MainActivity extends ServiceObserverActivity {
 
@@ -24,9 +26,20 @@ public class MainActivity extends ServiceObserverActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
+		//setContentView(R.layout.activity_main);
+		BundleMessageHelper msgH = new BundleMessageHelper(this);
+		msgH.sendCommandBundle(Command.POLL_ALL_RESPONSES.toBundle());
+		finish();
 		
 	}
+	
+	
+	public void onRequestNotificationsClicked(View v) {
+		BundleMessageHelper msgH = new BundleMessageHelper(this);
+		msgH.sendCommandBundle(Command.POLL_ALL_RESPONSES.toBundle());
+
+	}
+	
 	
 	@Override
 	protected void onServiceStarted() {

@@ -37,7 +37,7 @@ public final class R {
         public static final int fragment_container=0x7f080005;
         public static final int no=0x7f080007;
         public static final int okButton=0x7f080001;
-        public static final int showS=0x7f080004;
+        public static final int pollNotifications=0x7f080004;
         public static final int startS=0x7f080002;
         public static final int textView1=0x7f080008;
         public static final int yes=0x7f080006;

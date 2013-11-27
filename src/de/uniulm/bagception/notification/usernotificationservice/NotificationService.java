@@ -12,11 +12,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.widget.Toast;
-import de.philipphock.android.lib.logging.LOG;
 import de.philipphock.android.lib.services.observation.ConstantFactory;
 import de.philipphock.android.lib.services.observation.ServiceObservationActor;
 import de.philipphock.android.lib.services.observation.ServiceObservationReactor;
-import de.uniulm.bagception.bluetoothclientmessengercommunication.actor.BundleMessageActor;
 import de.uniulm.bagception.bluetoothclientmessengercommunication.actor.BundleMessageReactor;
 import de.uniulm.bagception.bluetoothclientmessengercommunication.service.BundleMessengerService;
 import de.uniulm.bagception.protocol.bundle.constants.Command;
@@ -95,28 +93,32 @@ public class NotificationService extends BundleMessengerService implements
 			return;
 		}
 		Response r = Response.getResponse(b);
-		LOG.out(this, "response message:"+r.getResponseCode()+ " "+r.name());
-		Bundle ack=null;
+		
+		//Bundle ack=null;
 		switch (r) {
 		case Ask_For_Specific_Device:
-			ack = ResponseAnswer.Ask_For_Specific_Device.getACK();
+			//ack = ResponseAnswer.Ask_For_Specific_Device.getACK();
 			ArrayList<BluetoothDevice> ds =  b.getParcelableArrayList(Response.EXTRA_KEYS.PAYLOAD);
 			showNotification(ds,b);
 			break;
 
 		case Confirm_Established_Connection:
-			ack = ResponseAnswer.Confirm_Established_Connection.getACK();
+			//ack = ResponseAnswer.Confirm_Established_Connection.getACK();
 			BluetoothDevice d = (BluetoothDevice) b.getParcelable(Response.EXTRA_KEYS.PAYLOAD);
 			showNotification(d,b);
 
 			break;
+			
+		case CLEAR_RESPONSES:
+			clearNotifications();
 		default:
 			break;
 		}
 		
 		//send ack = tells the service that we handled the message and it does not have to retransmit it ever again
-		if (ack != null)
-			bmHelper.sendResponseAnswerBundle(ack);
+//		if (ack != null)
+//			bmHelper.sendResponseAnswerBundle(ack);
+		//we don't do this anymore, this is confirmed by the answer itself
 		
 
 	}
@@ -147,6 +149,12 @@ public class NotificationService extends BundleMessengerService implements
 				.setContentText(msg).build();
 		
 		notificationManager.notify(0, mBuilder);
+	}
+	
+	
+	private void clearNotifications(){
+		NotificationManager notificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+		notificationManager.cancel(0);
 	}
 
 		

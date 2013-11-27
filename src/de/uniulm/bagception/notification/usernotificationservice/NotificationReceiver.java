@@ -1,12 +1,12 @@
 package de.uniulm.bagception.notification.usernotificationservice;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import de.uniulm.bagception.bluetoothclientmessengercommunication.service.BundleMessageHelper;
 import de.uniulm.bagception.notification.usernotificationservice.fragments.BaseResponseAnswerFragment;
 import de.uniulm.bagception.notification.usernotificationservice.fragments.impl.ConfirmConnectionFragment;
+import de.uniulm.bagception.protocol.bundle.constants.Command;
 import de.uniulm.bagception.protocol.bundle.constants.Response;
 import de.uniulm.bagception.protocol.bundle.constants.ResponseAnswerListener;
 
@@ -19,6 +19,7 @@ public class NotificationReceiver extends Activity implements ResponseAnswerList
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_notification_receiver);
 		bmHelper = new BundleMessageHelper(this);
+		bmHelper.sendResponseBundle(Response.CLEAR_RESPONSES.toBundle());
 		//this method is called by a touch on the notificationbar
 		//the notification knows which content to display
 		
@@ -64,7 +65,12 @@ public class NotificationReceiver extends Activity implements ResponseAnswerList
 		case Confirm_Established_Connection:
 			ret  = new ConfirmConnectionFragment(); 
 			break;
+			
+		case CLEAR_RESPONSES:
+			break;
 		}
+		
+		
 		
         
 		return ret;
@@ -82,7 +88,9 @@ public class NotificationReceiver extends Activity implements ResponseAnswerList
 	@Override
 	public void onResponseAnswerGiven(Bundle responseAnswer) {
 		bmHelper.sendResponseAnswerBundle(responseAnswer);
+		bmHelper.sendCommandBundle(Command.POLL_ALL_RESPONSES.toBundle());
 		finish();
+		
 	}
 
 	
