@@ -45,6 +45,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <receiver
+            android:name="StartServiceBroadcastReceiver"
+             >
+            <intent-filter>
+                <action android:name="de.uniulm.bagception.broadcast.bundlemessage.response" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
