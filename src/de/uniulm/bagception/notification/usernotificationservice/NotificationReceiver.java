@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
+import de.uniulm.bagception.bluetoothclientmessengercommunication.service.BundleMessageHelper;
 import de.uniulm.bagception.notification.usernotificationservice.fragments.BaseResponseAnswerFragment;
 import de.uniulm.bagception.notification.usernotificationservice.fragments.impl.ConfirmConnectionFragment;
 import de.uniulm.bagception.protocol.bundle.constants.Response;
@@ -11,11 +12,13 @@ import de.uniulm.bagception.protocol.bundle.constants.ResponseAnswerListener;
 
 public class NotificationReceiver extends Activity implements ResponseAnswerListener {
 
+	private BundleMessageHelper bmHelper;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_notification_receiver);
-		
+		bmHelper = new BundleMessageHelper(this);
 		//this method is called by a touch on the notificationbar
 		//the notification knows which content to display
 		
@@ -74,12 +77,11 @@ public class NotificationReceiver extends Activity implements ResponseAnswerList
 		getMenuInflater().inflate(R.menu.notification_receiver, menu);
 		return true;
 	}
+	
 
 	@Override
 	public void onResponseAnswerGiven(Bundle responseAnswer) {
-		Intent serviceIntent = new Intent(this,NotificationService.class);
-		serviceIntent.putExtras(responseAnswer);
-		startService(serviceIntent);
+		bmHelper.sendResponseAnswerBundle(responseAnswer);
 		finish();
 	}
 

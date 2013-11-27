@@ -12,24 +12,23 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.widget.Toast;
+import de.philipphock.android.lib.logging.LOG;
 import de.philipphock.android.lib.services.observation.ConstantFactory;
-import de.philipphock.android.lib.services.observation.ObservableService;
 import de.philipphock.android.lib.services.observation.ServiceObservationActor;
 import de.philipphock.android.lib.services.observation.ServiceObservationReactor;
-import de.uniulm.bagception.bluetoothservermessengercommunication.messenger.MessengerHelper;
-import de.uniulm.bagception.bluetoothservermessengercommunication.messenger.MessengerHelperCallback;
+import de.uniulm.bagception.bluetoothclientmessengercommunication.actor.BundleMessageActor;
+import de.uniulm.bagception.bluetoothclientmessengercommunication.actor.BundleMessageReactor;
+import de.uniulm.bagception.bluetoothclientmessengercommunication.service.BundleMessengerService;
 import de.uniulm.bagception.protocol.bundle.constants.Command;
 import de.uniulm.bagception.protocol.bundle.constants.Response;
 import de.uniulm.bagception.protocol.bundle.constants.ResponseAnswer;
 import de.uniulm.bagception.services.ServiceNames;
 
-public class NotificationService extends ObservableService implements
-		MessengerHelperCallback,ServiceObservationReactor {
+public class NotificationService extends BundleMessengerService implements
+		ServiceObservationReactor,BundleMessageReactor {
 
 	private ServiceObservationActor soActor;
-	private MessengerHelper messengerHelper;
 	
-
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
@@ -39,11 +38,11 @@ public class NotificationService extends ObservableService implements
 			if (answer != ResponseAnswer.NOT_AN_RESPONSE_ANSWER){
 				//startService called from notificationReceiver
 				//pass through middleware
-				messengerHelper.sendResponseBundle(intent.getExtras());
+				//TODO DELETE ALL
 			}
 		}
-		
-		
+		 
+		 
 		return super.onStartCommand(intent, flags, Service.START_NOT_STICKY);
 	}
 	
@@ -51,12 +50,11 @@ public class NotificationService extends ObservableService implements
 	
 	@Override
 	public void onFirstInit(){		
-		messengerHelper = new MessengerHelper(this,
-				ServiceNames.BLUETOOTH_CLIENT_SERVICE);
-		messengerHelper.register(this);
-		
+		super.onFirstInit();
 		//serviceObservation, with this, we can detect if the middleware is running
 		onServiceStopped(null); //here we pretend that the service has stopped. If it has getForceResendStatusString will have to effect and the service is stopped, if it has getForceResendStatusString will trigger onServiceStarted
+		
+		
 		soActor = new ServiceObservationActor(this,ServiceNames.BLUETOOTH_CLIENT_SERVICE);
 		soActor.register(this);
 		Intent broadcastRequest = new Intent();
@@ -66,16 +64,15 @@ public class NotificationService extends ObservableService implements
 				.setAction(ConstantFactory 
 						.getForceResendStatusString(ServiceNames.BLUETOOTH_CLIENT_SERVICE));  
 		sendBroadcast(broadcastRequest);
-
+		//when we reconnect with the bluetoothMiddleware, we ask if the btclient is connected
+		bmHelper.sendCommandBundle(Command.getCommandBundle(Command.RESEND_STATUS));
+		bmHelper.sendCommandBundle(Command.POLL_ALL_RESPONSES.toBundle());
 
 	}
 	
 		
 	@Override
 	public void onDestroy() {
-		if (messengerHelper != null)
-			messengerHelper.unregister(this);
-		
 		if (soActor!=null)
 			soActor.unregister(this);
 		super.onDestroy();
@@ -88,22 +85,17 @@ public class NotificationService extends ObservableService implements
 		return null;
 	}
 
-	// MessengerHelperCallback
 
-	@Override
-	public void onBundleMessage(Bundle b) {
-		// TODO Auto-generated method stub
-
-	}
 
 	@Override
 	public void onResponseMessage(Bundle b) {
 		
-
+		
 		if (isDead()){
 			return;
 		}
 		Response r = Response.getResponse(b);
+		LOG.out(this, "response message:"+r.getResponseCode()+ " "+r.name());
 		Bundle ack=null;
 		switch (r) {
 		case Ask_For_Specific_Device:
@@ -124,13 +116,14 @@ public class NotificationService extends ObservableService implements
 		
 		//send ack = tells the service that we handled the message and it does not have to retransmit it ever again
 		if (ack != null)
-			messengerHelper.sendResponseBundle(ack);
+			bmHelper.sendResponseAnswerBundle(ack);
+		
 
 	}
 
 	
 	private void showNotification(final List<BluetoothDevice> d,Bundle response) {
-		 showNotification("Bagception", "Es wurden mehrere Taschen gefunden",response);
+		 showNotification("Bagception", "Es wurden " +d.size()+ " Taschen gefunden",response);
 	}
 	
 	private void showNotification(final BluetoothDevice d,Bundle response) {
@@ -192,29 +185,7 @@ public class NotificationService extends ObservableService implements
 
 	}
 
-	/**
-	 * called when the connection to the bluetooth middleware is established 
-	 */
-	@Override
-	public void connectedWithRemoteService() {
-		//when we reconnect with the bluetoothMiddleware, we ask if the btclient is connected
-		messengerHelper.sendCommandBundle(Command.getCommandBundle(Command.RESEND_STATUS));
-		
-		messengerHelper.sendCommandBundle(Command.POLL_ALL_RESPONSES.toBundle());
-		
-		
-	}
 
-	/**
-	 * called when the connection to the bluetooth middleware is disconnected 
-	 */
-	@Override
-	public void disconnectedFromRemoteService() {
-		//restart middleware and reinit self if the connection to the middleware breaks up
-		startService(new Intent(ServiceNames.BLUETOOTH_CLIENT_SERVICE));
-		onFirstInit();
-		
-	}
 
 	//soActor callbacks
 	
@@ -229,6 +200,28 @@ public class NotificationService extends ObservableService implements
 			//called at startup by this
 		}
 	}
+
+
+
+	@Override
+	public void onResponseAnswerMessage(Bundle b) {
+		//nothing todo here
+	}
+
+
+
+	@Override
+	public void onBundleMessageRecv(Bundle b) {
+		//nothing todo here, we do not care about bundle messages at all
+	}
+
+
+
+	@Override
+	public void onBundleMessageSend(Bundle b) {
+		//nothing todo here, we do not care about bundle messages at all
+	}
+
 
 	
 	
