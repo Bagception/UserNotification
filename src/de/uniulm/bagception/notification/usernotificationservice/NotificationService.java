@@ -9,6 +9,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.widget.Toast;
@@ -143,9 +144,10 @@ public class NotificationService extends BundleMessengerService implements
 		NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		
 		Notification mBuilder = new Notification.Builder(
-				this).setSmallIcon(R.drawable.shoppingbag)
+				this).setSmallIcon(R.drawable.bagnotification)
 				.setContentTitle(title)
 				.setContentIntent(pIntent)
+				.setLargeIcon(BitmapFactory.decodeResource(getResources(),R.drawable.bagnotification))
 				.setContentText(msg).build();
 		
 		notificationManager.notify(0, mBuilder);
