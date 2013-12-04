@@ -21,13 +21,14 @@ import de.uniulm.bagception.bluetoothclientmessengercommunication.service.Bundle
 import de.uniulm.bagception.protocol.bundle.constants.Command;
 import de.uniulm.bagception.protocol.bundle.constants.Response;
 import de.uniulm.bagception.protocol.bundle.constants.ResponseAnswer;
+import de.uniulm.bagception.protocol.bundle.constants.StatusCode;
 import de.uniulm.bagception.services.ServiceNames;
 
 public class NotificationService extends BundleMessengerService implements
 		ServiceObservationReactor,BundleMessageReactor {
 
 	private ServiceObservationActor soActor;
-	
+
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
@@ -112,6 +113,21 @@ public class NotificationService extends BundleMessengerService implements
 			
 		case CLEAR_RESPONSES:
 			clearNotifications();
+		
+		case BLUETOOTH_CONNECTION:
+			boolean connected = b.getBoolean(Response.EXTRA_KEYS.PAYLOAD);
+			boolean valChanged = b.getBoolean(Response.EXTRA_KEYS.VALUE_HAS_CHANGED);
+			if (!valChanged){
+				//bluetooth state not changed
+				return;
+			}
+			String s = "lost";
+			if (connected){
+				s="established";
+			}
+			showNotification("Bagception","Connection "+s,null);
+			
+			break;
 		default:
 			break;
 		}
@@ -138,7 +154,9 @@ public class NotificationService extends BundleMessengerService implements
 			return;
 		}
 		Intent intent = new Intent(this, NotificationReceiver.class);
-		intent.putExtras(response);
+		if (response != null){
+			intent.putExtras(response);
+		}
 		PendingIntent pIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 		
 		NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -152,6 +170,7 @@ public class NotificationService extends BundleMessengerService implements
 		
 		notificationManager.notify(0, mBuilder);
 	}
+	
 	
 	
 	private void clearNotifications(){
@@ -176,7 +195,7 @@ public class NotificationService extends BundleMessengerService implements
 
 	@Override
 	public void onStatusMessage(Bundle b) {
-
+		
 	}
 
 	@Override

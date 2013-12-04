@@ -20,7 +20,7 @@ public class NotificationReceiver extends Activity implements ResponseAnswerList
 		setContentView(R.layout.activity_notification_receiver);
 		bmHelper = new BundleMessageHelper(this);
 		bmHelper.sendResponseBundle(Response.CLEAR_RESPONSES.toBundle());
-		//this method is called by a touch on the notificationbar
+		//this method is called by a touch on the notification bar
 		//the notification knows which content to display
 		
 		//first we need to create the correct fragment
@@ -34,16 +34,21 @@ public class NotificationReceiver extends Activity implements ResponseAnswerList
         if (savedInstanceState != null) {
             return;
         }
-        //find out which fragment to display
-        BaseResponseAnswerFragment f = getAppropriateFragment(getIntent().getExtras());
+        if (getIntent().getExtras() != null){
+	        //find out which fragment to display
+	        BaseResponseAnswerFragment f = getAppropriateFragment(getIntent().getExtras());
         
-        // pass the payload to the fragment (e.g. BluetoothDevice)
-        //TODO
-        f.setArguments(getIntent().getExtras());
-        
-        // Add the fragment to the 'fragment_container' FrameLayout
-        getFragmentManager().beginTransaction()
-                .add(R.id.fragment_container, f).commit();
+        	// pass the payload to the fragment (e.g. BluetoothDevice)
+            //TODO
+            f.setArguments(getIntent().getExtras());
+            
+            // Add the fragment to the 'fragment_container' FrameLayout
+            getFragmentManager().beginTransaction()
+                    .add(R.id.fragment_container, f).commit();
+            	
+        }else{
+        	finish();
+        }
         
 		
 	}
