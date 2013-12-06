@@ -3,6 +3,8 @@ package de.uniulm.bagception.notification.usernotificationservice;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.json.JSONException;
+
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -13,15 +15,18 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.widget.Toast;
+import de.philipphock.android.lib.logging.LOG;
 import de.philipphock.android.lib.services.observation.ConstantFactory;
 import de.philipphock.android.lib.services.observation.ServiceObservationActor;
 import de.philipphock.android.lib.services.observation.ServiceObservationReactor;
 import de.uniulm.bagception.bluetoothclientmessengercommunication.actor.BundleMessageReactor;
 import de.uniulm.bagception.bluetoothclientmessengercommunication.service.BundleMessengerService;
+import de.uniulm.bagception.bundlemessageprotocol.BundleMessage;
+import de.uniulm.bagception.bundlemessageprotocol.BundleMessage.BUNDLE_MESSAGE;
+import de.uniulm.bagception.bundlemessageprotocol.entities.Item;
 import de.uniulm.bagception.protocol.bundle.constants.Command;
 import de.uniulm.bagception.protocol.bundle.constants.Response;
 import de.uniulm.bagception.protocol.bundle.constants.ResponseAnswer;
-import de.uniulm.bagception.protocol.bundle.constants.StatusCode;
 import de.uniulm.bagception.services.ServiceNames;
 
 public class NotificationService extends BundleMessengerService implements
@@ -29,6 +34,7 @@ public class NotificationService extends BundleMessengerService implements
 
 	private ServiceObservationActor soActor;
 
+	
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
@@ -241,7 +247,31 @@ public class NotificationService extends BundleMessengerService implements
 
 	@Override
 	public void onBundleMessageRecv(Bundle b) {
-		//nothing todo here, we do not care about bundle messages at all
+
+		LOG.out(this, b);
+		BUNDLE_MESSAGE msg = BundleMessage.getInstance().getBundleMessageType(b);
+		switch (msg){
+			
+		case ITEM_FOUND:
+		case ITEM_NOT_FOUND:
+			
+			Item i;
+			try {
+				i = BundleMessage.getInstance().toItemFound(b);
+				String itemMsgString = "###Item found: "+i.getName();
+				if (msg == BUNDLE_MESSAGE.ITEM_NOT_FOUND){
+					itemMsgString = "unknown Tag: "+i.getIds().get(0);
+				}
+				Toast.makeText(this,itemMsgString , Toast.LENGTH_SHORT)
+				.show();
+			} catch (JSONException e) {
+				Toast.makeText(this, "error reading item", Toast.LENGTH_SHORT)
+				.show();
+			}
+		break;
+		
+			default: break;
+		}
 	}
 
 
