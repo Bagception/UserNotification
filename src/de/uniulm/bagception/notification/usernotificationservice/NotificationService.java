@@ -118,7 +118,13 @@ public class NotificationService extends BundleMessengerService implements
 			break;
 			
 		case CLEAR_RESPONSES:
-			clearNotifications();
+			ArrayList<Integer> ids=b.getIntegerArrayList(Response.EXTRA_KEYS.NOTIFICATIONS_TO_CLEAR);
+			if (ids == null){
+				clearNotifications();
+			}else{
+				clearNotifications(ids);	
+			}
+			
 		
 		case BLUETOOTH_CONNECTION:
 			boolean connected = b.getBoolean(Response.EXTRA_KEYS.PAYLOAD);
@@ -182,6 +188,14 @@ public class NotificationService extends BundleMessengerService implements
 	private void clearNotifications(){
 		NotificationManager notificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 		notificationManager.cancel(0);
+	}
+	
+	private void clearNotifications(ArrayList<Integer> ids){
+		NotificationManager notificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+		for (int id:ids){
+			notificationManager.cancel(id);	
+		}
+		
 	}
 
 		
