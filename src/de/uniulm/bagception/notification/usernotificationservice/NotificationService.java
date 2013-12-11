@@ -262,30 +262,30 @@ public class NotificationService extends BundleMessengerService implements
 	@Override
 	public void onBundleMessageRecv(Bundle b) {
 
-		LOG.out(this, b);
-		BUNDLE_MESSAGE msg = BundleMessage.getInstance().getBundleMessageType(b);
-		switch (msg){
-			
-		case ITEM_FOUND:
-		case ITEM_NOT_FOUND:
-			
-			Item i;
-			try {
-				i = BundleMessage.getInstance().toItemFound(b);
-				String itemMsgString = "###Item found: "+i.getName();
-				if (msg == BUNDLE_MESSAGE.ITEM_NOT_FOUND){
-					itemMsgString = "unknown Tag: "+i.getIds().get(0);
-				}
-				Toast.makeText(this,itemMsgString , Toast.LENGTH_SHORT)
-				.show();
-			} catch (JSONException e) {
-				Toast.makeText(this, "error reading item", Toast.LENGTH_SHORT)
-				.show();
-			}
-		break;
-		
-			default: break;
-		}
+//		LOG.out(this, b);
+//		BUNDLE_MESSAGE msg = BundleMessage.getInstance().getBundleMessageType(b);
+//		switch (msg){
+//			
+//		case ITEM_FOUND:
+//		case ITEM_NOT_FOUND:
+//			
+//			Item i;
+//			try {
+//				i = BundleMessage.getInstance().toItemFound(b);
+//				String itemMsgString = "###Item found: "+i.getName();
+//				if (msg == BUNDLE_MESSAGE.ITEM_NOT_FOUND){
+//					itemMsgString = "unknown Tag: "+i.getIds().get(0);
+//				}
+//				Toast.makeText(this,itemMsgString , Toast.LENGTH_SHORT)
+//				.show();
+//			} catch (JSONException e) {
+//				Toast.makeText(this, "error reading item", Toast.LENGTH_SHORT)
+//				.show();
+//			}
+//		break;
+//		
+//			default: break;
+//		}
 	}
 
 
